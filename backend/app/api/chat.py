@@ -1,22 +1,26 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-router = APIRouter()
+from app.core.database import SessionLocal
+from app.agents.master_agent import MasterAgent
 
-# -------- Schemas --------
-class ChatRequest(BaseModel):
-    message: str
+router = APIRouter(prefix="/chat", tags=["Chat"])
 
-class ChatResponse(BaseModel):
-    reply: str
 
-# -------- Routes --------
-@router.post("/", response_model=ChatResponse)
-def chat(payload: ChatRequest):
-    """
-    Chat endpoint (Phase 1: stub)
-    Phase 3: Will delegate to MasterAgent
-    """
-    return ChatResponse(
-        reply="Hello! LoanEase assistant is active and ready to help."
-    )
+# Dependency to get DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@router.post("/")
+def chat(payload: dict, db: Session = Depends(get_db)):
+    master_agent = MasterAgent(db)
+    result = master_agent.process_loan(payload)
+    return {
+        "status": "success",
+        "data": result
+    }

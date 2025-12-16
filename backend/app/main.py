@@ -11,3 +11,4 @@ app.include_router(mock_router, prefix="/mock", tags=["Mock Services"])
 @app.get("/")
 def health_check():
     return {"status": "LoanEase backend running"}
+
