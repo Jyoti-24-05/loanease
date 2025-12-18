@@ -1,24 +1,21 @@
 from fastapi import APIRouter
+import random
 
 router = APIRouter()
 
-@router.get("/kyc/{customer_id}")
-def mock_kyc_service(customer_id: str):
-    """
-    Simulates CRM / KYC verification
-    """
+
+@router.get("/kyc/{application_id}")
+def mock_kyc(application_id: int):
     return {
-        "customer_id": customer_id,
+        "application_id": application_id,
         "kyc_status": "VERIFIED"
     }
 
-@router.get("/credit-score/{customer_id}")
-def mock_credit_bureau(customer_id: str):
-    """
-    Simulates credit bureau response
-    """
+
+@router.get("/credit-score/{application_id}")
+def mock_credit_score(application_id: int):
     return {
-        "customer_id": customer_id,
-        "credit_score": 750,
-        "credit_limit": 500000
-    }
+        "application_id": application_id,
+        "credit_score": random.randint(720, 820),
+        "credit_limit": 300000
+    } 

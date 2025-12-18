@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from app.core import models
 
 
@@ -15,13 +16,14 @@ class SalesAgent:
         loan_amount: float,
         tenure_months: int
     ):
-        # Check if customer exists
+        # 1️⃣ Check if customer already exists by phone
         customer = (
             self.db.query(models.Customer)
             .filter(models.Customer.phone == phone)
             .first()
         )
 
+        # 2️⃣ Create customer if not exists
         if not customer:
             customer = models.Customer(
                 name=name,
@@ -29,10 +31,21 @@ class SalesAgent:
                 email=email,
                 address=address
             )
-            self.db.add(customer)
-            self.db.commit()
-            self.db.refresh(customer)
 
+            try:
+                self.db.add(customer)
+                self.db.commit()
+                self.db.refresh(customer)
+            except IntegrityError:
+                # Handles rare case: email already exists
+                self.db.rollback()
+                customer = (
+                    self.db.query(models.Customer)
+                    .filter(models.Customer.email == email)
+                    .first()
+                )
+
+        # 3️⃣ Create loan application
         application = models.LoanApplication(
             customer_id=customer.id,
             loan_amount=loan_amount,

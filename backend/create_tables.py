@@ -1,6 +1,6 @@
-from app.core.database import engine, Base
-from app.core import models  # ensures models are registered
+from app.core.database import engine
+from app.core.models import Base
 
-print("Creating database tables...")
+print("Creating tables...")
 Base.metadata.create_all(bind=engine)
-print("✅ Tables created successfully!")
+print("Tables created successfully.")

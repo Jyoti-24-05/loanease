@@ -6,3 +6,6 @@ pydantic
 python-jose
 redis
 reportlab
+python-multipart
+python-dotenv
+requests

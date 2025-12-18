@@ -13,23 +13,28 @@ class MasterAgent:
         self.sanction_agent = SanctionAgent(db)
 
     def process_loan(self, payload: dict):
+        # Step 1: Sales Agent
         customer, application = self.sales_agent.create_customer_and_application(
-            name=payload["name"],
-            phone=payload["phone"],
-            email=payload["email"],
-            address=payload["address"],
-            loan_amount=payload["loan_amount"],
-            tenure_months=payload["tenure_months"]
+            name=payload.get("name"),
+            phone=payload.get("phone"),
+            email=payload.get("email"),
+            address=payload.get("address"),
+            loan_amount=payload.get("loan_amount"),
+            tenure_months=payload.get("tenure_months")
         )
 
+        # Step 2: Verification Agent
         verification = self.verification_agent.perform_kyc(application.id)
 
+        # Step 3: Underwriting Agent
         evaluation = self.underwriting_agent.evaluate(
-            application.id, payload["loan_amount"]
+            application.id,
+            payload.get("loan_amount")
         )
 
+        # Step 4: Sanction Agent (conditional)
         sanction = None
-        if evaluation.eligible == "True":
+        if evaluation.eligible:   # <-- FIXED (boolean-safe)
             sanction = self.sanction_agent.generate(application.id)
 
         return {

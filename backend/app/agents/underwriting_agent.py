@@ -11,8 +11,8 @@ class UnderwritingAgent:
         response = requests.get(
             f"http://127.0.0.1:8000/mock/credit-score/{application_id}"
         )
-
         credit_data = response.json()
+
         score = credit_data["credit_score"]
         limit = credit_data["credit_limit"]
 
@@ -29,14 +29,23 @@ class UnderwritingAgent:
             eligible = False
             remarks = "Loan amount exceeds eligibility"
 
-        evaluation = models.CreditEvaluation(
-            application_id=application_id,
-            credit_score=score,
-            eligible=str(eligible),
-            remarks=remarks
+        # 🔑 FIX: check existing evaluation
+        evaluation = (
+            self.db.query(models.CreditEvaluation)
+            .filter(models.CreditEvaluation.application_id == application_id)
+            .first()
         )
 
-        self.db.add(evaluation)
+        if not evaluation:
+            evaluation = models.CreditEvaluation(
+                application_id=application_id
+            )
+            self.db.add(evaluation)
+
+        evaluation.credit_score = score
+        evaluation.eligible = eligible
+        evaluation.remarks = remarks
+
         self.db.commit()
         self.db.refresh(evaluation)
 
