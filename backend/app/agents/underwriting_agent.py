@@ -7,7 +7,19 @@ class UnderwritingAgent:
     def __init__(self, db: Session):
         self.db = db
 
-    def evaluate(self, application_id: int, loan_amount: float):
+    def evaluate(self, application_id: int):
+        # 🔑 Fetch loan amount from DB
+        application = (
+            self.db.query(models.LoanApplication)
+            .filter(models.LoanApplication.id == application_id)
+            .first()
+        )
+
+        if not application:
+            raise ValueError("Loan application not found")
+
+        loan_amount = application.loan_amount
+
         response = requests.get(
             f"http://127.0.0.1:8000/mock/credit-score/{application_id}"
         )
@@ -29,7 +41,6 @@ class UnderwritingAgent:
             eligible = False
             remarks = "Loan amount exceeds eligibility"
 
-        # 🔑 FIX: check existing evaluation
         evaluation = (
             self.db.query(models.CreditEvaluation)
             .filter(models.CreditEvaluation.application_id == application_id)
