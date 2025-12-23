@@ -12,9 +12,10 @@ class SanctionAgent:
         customer = application.customer
 
         pdf_path = generate_sanction_pdf(
+            customer_name=application.customer.name,
             application_id=application.id,
-            customer_name=customer.name,
-            amount=application.loan_amount
+            loan_amount=application.loan_amount,
+            tenure_months=application.tenure_months
         )
 
         sanction = models.SanctionLetter(

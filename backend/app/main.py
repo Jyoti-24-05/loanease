@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.chat import router as chat_router
 from app.api.mock_services import router as mock_router
 from app.api.loan import router as loan_router
@@ -8,6 +10,15 @@ from app.api.sanction import router as sanction_router
 
 app = FastAPI(title="LoanEase API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React app
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API routers
 app.include_router(chat_router, prefix="/chat", tags=["Chat"])
 
 app.include_router(verification_router, tags=["Verification"])
@@ -19,6 +30,9 @@ app.include_router(underwrite_router, tags=["Underwriting"])
 app.include_router(sanction_router, tags=["sanction"])
 
 app.include_router(mock_router, prefix="/mock", tags=["Mock Services"])
+
+# ✅ Serve sanction PDFs
+app.mount("/sanctions", StaticFiles(directory="sanctions"), name="sanctions")
 
 
 @app.get("/")

@@ -7,7 +7,7 @@ class UnderwritingAgent:
     def __init__(self, db: Session):
         self.db = db
 
-    def evaluate(self, application_id: int):
+    def evaluate(self, application_id: int,loan_amount: float):
         # 🔑 Fetch loan amount from DB
         application = (
             self.db.query(models.LoanApplication)
@@ -61,3 +61,4 @@ class UnderwritingAgent:
         self.db.refresh(evaluation)
 
         return evaluation
+
